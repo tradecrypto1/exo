@@ -103,10 +103,6 @@ class MockReceiver[T]:
             except WouldBlock:
                 break
 
-    def __exit__(self, exc_type, exc, tb):
-        # Don't swallow exceptions
-        return False
-
 
 # Runner supervisor without multiprocessing logic.
 @dataclass(frozen=True)
@@ -164,8 +160,7 @@ def get_mlx_ring_instance(
         shard_assignments=get_shard_assignments(
             model_id, node_to_runner, runner_to_shard
         ),
-        hosts_by_node={},
-        ephemeral_port=0,
+        hosts=[],
     )
 
 
