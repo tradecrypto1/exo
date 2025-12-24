@@ -1,0 +1,43 @@
+services:
+  exo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exo
+    ports:
+      - "52415:52415"
+    environment:
+      - RUST_LOG=info
+    # GPU support: Currently MLX on Linux only supports CPU.
+    # CUDA support is planned but not yet implemented.
+    # When CUDA support is available, uncomment the following:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    volumes:
+      # Mount the data directory to persist state
+      - exo-data:/root/.local/share/exo
+      # Optionally mount models directory if you want to use local models
+      - ./models:/root/.cache/huggingface/hub
+    networks:
+      - exo-network
+    restart: unless-stopped
+    # For better performance, you might want to adjust these
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+
+networks:
+  exo-network:
+    driver: bridge
+
+volumes:
+  exo-data:
+    driver: local
+

@@ -1,0 +1,71 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv/
+ENV/
+env/
+
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# Node.js / Dashboard
+dashboard/node_modules/
+dashboard/.svelte-kit/
+dashboard/build/
+
+# IDE
+.idea/
+.vscode/
+.zed/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+*.xcuserstate
+*.xcuserdata
+*.xcuserdatad/
+app/EXO/build/
+
+# Nix
+.direnv/
+flake.lock
+flake.nix
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+tmp/
+tmp/**
+
+# CI/CD
+.github/
+
+# Packaging
+packaging/
+

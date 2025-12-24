@@ -1,0 +1,20 @@
+# Example docker-compose configuration for GPU support
+# NOTE: MLX currently only supports CPU on Linux. CUDA support is planned but not yet implemented.
+# This configuration is provided for future use when CUDA support becomes available.
+#
+# To use this file (when GPU support is available):
+#   docker-compose -f docker-compose.yml -f docker-compose.gpu.yml up
+
+services:
+  exo:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
