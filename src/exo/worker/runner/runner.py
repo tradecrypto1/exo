@@ -33,12 +33,21 @@ from exo.shared.types.worker.runners import (
     RunnerWarmingUp,
 )
 from exo.utils.channels import ClosedResourceError, MpReceiver, MpSender
-from exo.worker.engines.mlx.generator.generate import mlx_generate, warmup_inference
-from exo.worker.engines.mlx.utils_mlx import (
-    initialize_mlx,
-    mlx_force_oom,
+from exo.worker.engines.engine_selector import (
+    generate_text,
+    initialize_model,
+    select_engine,
+    warmup_model,
 )
 from exo.worker.runner.bootstrap import logger
+
+# Try to import mlx_force_oom for debug prompts (optional)
+try:
+    from exo.worker.engines.mlx.utils_mlx import mlx_force_oom
+except (ImportError, OSError):
+    # MLX not available, create a no-op function
+    def mlx_force_oom() -> None:
+        logger.warning("MLX not available, cannot force OOM")
 
 
 def main(
@@ -63,6 +72,7 @@ def main(
         model = None
         tokenizer = None
         sampler = None
+        engine_type: str | None = None
 
         current_status: RunnerStatus = RunnerWaitingForModel()
         logger.info("runner waiting for model")
@@ -89,7 +99,9 @@ def main(
                             )
                         )
 
-                        model, tokenizer, sampler = initialize_mlx(bound_instance)
+                        # Select and initialize engine (MLX or llama.cpp)
+                        engine_type = select_engine(bound_instance)
+                        model, tokenizer, sampler = initialize_model(bound_instance)
 
                         current_status = RunnerLoaded()
                         logger.info("runner loaded")
@@ -111,11 +123,11 @@ def main(
                         )
 
                         logger.info(f"warming up inference for instance: {instance}")
-                        toks = warmup_inference(
+                        toks = warmup_model(
                             model=model,
                             tokenizer=tokenizer,
                             sampler=sampler,
-                            # kv_prefix_cache=kv_prefix_cache,  # supply for warmup-time prefix caching
+                            engine=engine_type,
                         )
                         logger.info(f"warmed up by generating {toks} tokens")
                         logger.info(
@@ -145,12 +157,13 @@ def main(
                         assert task_params.messages[0].content is not None
                         _check_for_debug_prompts(task_params.messages[0].content)
 
-                        # Generate responses using the actual MLX generation
-                        for response in mlx_generate(
+                        # Generate responses using the selected engine (MLX or llama.cpp)
+                        for response in generate_text(
                             model=model,
                             tokenizer=tokenizer,
                             sampler=sampler,
                             task=task_params,
+                            engine=engine_type,
                         ):
                             match response:
                                 case GenerationResponse():
@@ -236,6 +249,9 @@ def _check_for_debug_prompts(
         logger.info("raising exception")
         raise Exception("Artificial runner exception - for testing purposes only.")
     if EXO_RUNNER_MUST_OOM in prompt:
-        mlx_force_oom()
+        try:
+            mlx_force_oom()
+        except NameError:
+            logger.warning("MLX not available, cannot force OOM")
     if EXO_RUNNER_MUST_TIMEOUT in prompt:
         time.sleep(100)

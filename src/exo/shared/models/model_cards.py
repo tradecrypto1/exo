@@ -448,4 +448,18 @@ MODEL_CARDS: dict[str, ModelCard] = {
     #         supports_tensor=True,
     #     ),
     # ),
+    # GGUF models (for llama.cpp engine)
+    "tinyllama-1.1b-gguf": ModelCard(
+        short_id="tinyllama-1.1b-gguf",
+        model_id=ModelId("TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"),
+        name="TinyLlama 1.1B Chat (GGUF Q4_K_M)",
+        description="""TinyLlama is a compact 1.1B parameter language model. This GGUF version works with llama.cpp engine on Linux/Windows with CUDA support.""",
+        tags=["gguf", "small", "llama.cpp"],
+        metadata=ModelMetadata(
+            model_id=ModelId("TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"),
+            pretty_name="TinyLlama 1.1B Chat (GGUF)",
+            storage_size=Memory.from_mb(736),  # Q4_K_M quantization
+            n_layers=22,
+        ),
+    ),
 }

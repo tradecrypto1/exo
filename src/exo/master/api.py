@@ -77,11 +77,18 @@ def chunk_to_response(
 
 
 async def resolve_model_meta(model_id: str) -> ModelMetadata:
+    # First check by short_id
     if model_id in MODEL_CARDS:
         model_card = MODEL_CARDS[model_id]
         return model_card.metadata
-    else:
-        return await get_model_meta(model_id)
+    
+    # Then check by full model_id (for GGUF models that might be referenced by their HuggingFace ID)
+    for card in MODEL_CARDS.values():
+        if str(card.model_id) == model_id:
+            return card.metadata
+    
+    # Fall back to fetching from HuggingFace (for models not in MODEL_CARDS)
+    return await get_model_meta(model_id)
 
 
 class API:
